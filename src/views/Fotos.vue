@@ -12,7 +12,7 @@
 </template>
 <script>
 
-import Foto from "@/components/Fotografia.vue"
+import Foto from "../components/Fotografia.vue"
 
 export default {
   name: 'Fotos',

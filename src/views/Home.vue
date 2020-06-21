@@ -36,3 +36,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+  * {
+    background: #eeeeee;
+  }
+</style>
