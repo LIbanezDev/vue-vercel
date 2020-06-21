@@ -1,28 +1,35 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <b-navbar toggleable="lg" type="dark" variant="success">
+      <div class="container">
+        <b-navbar-brand>
+          <img src="@/assets/chile.png" height="35" width="35" class="d-inline-block align-top" alt="Kitten">
+          League of Devs Chile
+        </b-navbar-brand>
+        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+
+        <b-collapse id="nav-collapse" is-nav>
+          <b-navbar-nav>
+            <b-nav-item :to="{name:'Home'}" exact>Home</b-nav-item>         
+            <b-nav-item :to="{name:'About'}">Sobre nosotros</b-nav-item>
+            <b-nav-item :to="{name:'Servicios'}">Servicios</b-nav-item>
+            <b-nav-item :to="{name:'Fotos'}">Fotos</b-nav-item>
+          </b-navbar-nav>
+        </b-collapse>
+      </div>
+    </b-navbar>
+    <b-container>     
+      <router-view/>
+    </b-container>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
-  name: 'app',
-  components: {
-    HelloWorld
-  }
+  data(){
+    return{
+      
+    }
+  },
 }
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
