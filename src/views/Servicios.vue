@@ -6,8 +6,8 @@
             <br>
             </b-col>
         </b-row>
-        <b-row>
-          <b-col cols="8">
+        <b-row class="d-flex justify-content-center">
+          <b-col cols="6" class="border">
             <h2 class="justify-content-center d-flex"> Meals List </h2>
             <b-button
                     :variant="btnColor"
@@ -15,7 +15,7 @@
                     squared
                     size="sm">
               {{ btnActivated ? 'Close Form' : 'Show Form' }} </b-button>
-            <form @submit="addMeal" v-if="btnActivated" class="mt-4 mb-4">
+            <b-form @submit="addMeal" v-if="btnActivated" class="mt-4 mb-4">
               <b-form-group label="Meal Name:" label-for="name">
                 <b-form-input
                   id="name"
@@ -32,20 +32,56 @@
                   placeholder="Enter description"
                 ></b-form-input>
               </b-form-group>
+                <b-form-group label="Amount" label-for="desc">
+                <b-form-input
+                  id="desc"
+                  v-model="addMealForm.desc"
+                  required
+                  placeholder="Enter description"
+                ></b-form-input>
+              </b-form-group>
+                <b-form-group label="Price:" label-for="desc">
+                <b-form-input
+                  id="desc"
+                  v-model="addMealForm.desc"
+                  required
+                  placeholder="Enter description"
+                ></b-form-input>
+              </b-form-group>
               <b-button type="submit" variant="primary" size="sm" squared>Add Meal</b-button>
-            </form>
+            </b-form>
 
-            <b-list-group class="mt-4 mb-4">
-                <b-spinner label="Spinning" v-if="showSpinner"></b-spinner>
-                <b-list-group-item v-for="(meal, index) in mealsList" :key="index">
-                    {{ meal._id }} - {{index+1}}. {{ meal.name }} - {{ meal.desc }}
-                    <b-button-group class="ml-5" size="sm">
-                        <b-button squared variant="success">Edit</b-button>
-                        <b-button squared variant="danger" @click="deleteMeal(meal._id, index)">Delete</b-button>
-                    </b-button-group>
-                </b-list-group-item>
-            </b-list-group>
-
+            <b-table
+                    ref="selectableTable"
+                    select-mode="single"
+                    selectable
+                    @row-selected="onMealSelected"
+                    :items="mealsList"
+                    :busy="loadingData"
+                    class="mt-3"
+                    :fields="fieldsMeals"
+                    outlined>
+              <template v-slot:table-busy>
+                <div class="text-center text-danger my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong>Loading Meals...</strong>
+                </div>
+              </template>
+                <template v-slot:cell(selected)="{ rowSelected }">
+                    <template v-if="rowSelected">
+                      <span aria-hidden="true">&check;</span>
+                      <span class="sr-only">Selected</span>
+                    </template>
+                    <template v-else>
+                      <span aria-hidden="true">&nbsp;</span>
+                      <span class="sr-only">Not selected</span>
+                    </template>
+              </template>
+            </b-table>
+              <h2> {{ mealSelected }}</h2>
+              <b-form @submit="addOrder">
+                <b-button type="submit" variant="primary" size="sm" squared class="mt-4 mb-4">Order Meal...</b-button>
+              </b-form>
             <!-- CRUD meal alerts -->
             <b-alert
               :variant="alertVariant"
@@ -56,10 +92,17 @@
             >
               {{ alertText }}
             </b-alert>
-
           </b-col>
-          <b-col cols="4">
-            <h2 class="justify-content-center d-flex"> Orders </h2>
+          <b-col cols="5" class="border ml-5">
+              <h2 class="justify-content-center d-flex"> Orders </h2>
+              <b-table :items="ordersList" :busy="loadingData" class="mt-5" :fields="fieldsOrders" outlined>
+              <template v-slot:table-busy>
+                <div class="text-center text-danger my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong>Loading Orders...</strong>
+                </div>
+              </template>
+            </b-table>
           </b-col>
         </b-row>
     </div>
@@ -71,14 +114,19 @@
         },
         data() {
             return {
-                showSpinner: true,
+                loadingData:true,
                 mealsList: [],
                 ordersList: [],
                 btnActivated: false,
                 addMealForm:{
-                  name: '',
-                  desc: ''
+                    name: '',
+                    desc: '',
+                    amount: '',
+                    price: '',
                 },
+                fieldsMeals:['name', 'desc','price'],
+                fieldsOrders:['meal_id', 'user_id', 'amount'],
+                mealSelected:[],
                 CRUDMealAlert:false,
                 alertVariant:''
             }
@@ -89,7 +137,13 @@
                     .then(res => res.json())
                     .then(meals => {
                         this.mealsList = meals;
-                        this.showSpinner = false
+                        fetch('https://serverless-84p4na5tk.vercel.app/api/orders')
+                            .then(data => data.json())
+                            .then(orders => {
+                                this.ordersList = orders;
+                                console.log(this.ordersList);
+                                this.loadingData = false
+                            })
                     })
             },
             addMeal(evt) {
@@ -108,25 +162,38 @@
                     this.btnActivated = false
                   })
             },
-            deleteMeal(mealId, index){
-              fetch(`https://serverless-aq52i3rgo.vercel.app/api/meals/${mealId}`, {
-                    method: 'DELETE',
-                  })
-                  .then(res => {
-                      this.CRUDMealAlert = true
-                      this.alertVariant = 'danger'
-                      console.log(res.status)
-                      console.log(mealId)
-                      this.mealsList.splice(index, 1);
-                  })
-            },
-            getOrders(){
-                fetch('https://serverless-aq52i3rgo.vercel.app/api/meals')
-                    .then(res => res.json())
-                    .then(orders => {
-                      this.ordersList = orders
+            deleteMeal(mealId){
+                console.log(mealId)
+                fetch(`https://serverless-aq52i3rgo.vercel.app/api/meals/${mealId}`, {
+                      method: 'DELETE',
+                    })
+                    .then(res => {
+                        this.CRUDMealAlert = true
+                        this.alertVariant = 'danger'
+                        console.log(res.status)
                     })
             },
+            addOrder(evt){
+                evt.preventDefault()
+                const orderToAdd = {
+                    meal_id:this.mealSelected._id,
+                    user_id:"Lucas",
+                    amount:"1"
+                }
+                fetch('https://serverless-aq52i3rgo.vercel.app/api/orders', {
+                  method: 'POST', // or 'PUT'
+                  body: JSON.stringify(orderToAdd), // data can be `string` or {object}!
+                  headers:{
+                    'Content-Type': 'application/json'
+                  },
+                }).then(res => res.json())
+                  .then(orderAdded => {
+                    this.ordersList.push(orderAdded)
+                  })
+            },
+            onMealSelected(meal) {
+                this.mealSelected = meal
+              },
         },
         computed:{
           btnColor(){
