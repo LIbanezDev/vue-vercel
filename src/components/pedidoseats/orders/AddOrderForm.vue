@@ -100,7 +100,7 @@
                     meal_id: this.mealSelected._id,
                     amount: this.form.amount
                 }
-                axios.post('http://localhost:3000/api/orders', orderToAdd, {
+                axios.post('https://serverless-tan-theta.vercel.app/api/orders', orderToAdd, {
                     headers: {
                         authorization: localStorage.getItem('token')
                     }
