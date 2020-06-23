@@ -4,7 +4,6 @@
         <b-row>
             <b-col class="justify-content-center d-flex mb-4">
                 <h1> PedidosEats - Node & Vue JS App </h1>
-                <h2 v-if="userData"> {{ userData }} </h2>
             </b-col>
         </b-row>
 
@@ -28,7 +27,6 @@
             </template>
             <Carousel/>
         </b-row>
-
     </div>
 </template>
 

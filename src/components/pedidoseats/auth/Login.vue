@@ -74,7 +74,7 @@
                     if(res.data.token) {
                         const userToken = res.data.token
                         localStorage.setItem('token', userToken)
-
+                        // Get user data
                         axios.get('https://serverless-tan-theta.vercel.app/api/auth/me', {
                             headers: {
                                 Authorization:localStorage.getItem('token')
@@ -84,9 +84,8 @@
                             const { name, email } = userData.data
                             localStorage.setItem('userData', JSON.stringify({name, email}))
                             this.loadingLogin = false
-                            this.changeUserState(true)
+                            window.location.href = "/";
                         })
-
                     }else{
                         this.loadingLogin = false
                         this.wrongUserOrEmail = true

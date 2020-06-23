@@ -61,30 +61,31 @@
             </div>
           </template>
         </b-table>
-          <h2> {{ mealSelected }}</h2>
-          <b-form @submit="addOrder">
-            <b-button type="submit" variant="primary" size="sm" squared class="mt-4 mb-4" disabled>Order Meal...</b-button>
-          </b-form>
+
+        <AddOrderForm :mealSelected="mealSelected" v-if="mealSelected"></AddOrderForm>
+
         <b-button variant="danger" size="sm" squared class="mt-4 mb-4" @click="signOff">Sign off</b-button>
         <!-- CRUD meal alerts -->
         <b-alert
-          :variant="alertVariant"
+          :variant="alert.variant"
           dismissible
           fade
-          :show="CRUDMealAlert"
-          @dismissed="CRUDMealAlert=false"
+          :show="alert.show"
+          @dismissed="alert.show=false"
         >
-          {{ alertText }}
+          {{ alert.text }}
         </b-alert>
         </div>
 </template>
 
 <script>
-
+    import axios from 'axios'
     import {mapState, mapMutations} from 'vuex';
+    import AddOrderForm from "../orders/AddOrderForm";
 
     export default {
         name: "Register",
+        components: {AddOrderForm},
         mounted() {
           this.getData()
         },
@@ -96,68 +97,68 @@
                     amount: '',
                     price: '',
                 },
+                alert:{
+                    show:false,
+                    variant:'',
+                    text:''
+                },
+                mealSelected:{},
                 fieldsMeals:['name', 'desc','price'],
-                mealSelected:[],
-                CRUDMealAlert:false,
-                alertVariant:'',
                 btnActivated: false,
             }
         },
         methods:{
             ...mapMutations(["setMealsList", "setOrderList", "isNotLoading", "changeUserState"]),
             getData() {
-                fetch('https://serverless-aq52i3rgo.vercel.app/api/meals')
-                    .then(res => res.json())
+                axios.get('https://serverless-tan-theta.vercel.app/api/meals', {
+                    headers: {
+                        authorization: localStorage.getItem('token')
+                    }
+                })
                     .then(meals => {
-                        this.setMealsList(meals)
-                        fetch('https://serverless-84p4na5tk.vercel.app/api/orders')
-                            .then(data => data.json())
+                        this.setMealsList(meals.data)
+                        axios.get('https://serverless-tan-theta.vercel.app/api/orders', {
+                            headers: {
+                                authorization: localStorage.getItem('token')
+                            }
+                        })
                             .then(orders => {
-                                this.setOrderList(orders)
+                                this.setOrderList(orders.data)
                                 this.isNotLoading()
                             })
                     })
             },
             addMeal(evt) {
                 evt.preventDefault()
-                fetch('https://serverless-aq52i3rgo.vercel.app/api/meals', {
-                  method: 'POST', // or 'PUT'
-                  body: JSON.stringify(this.addMealForm), // data can be `string` or {object}!
-                  headers:{
-                    'Content-Type': 'application/json'
-                  }
-                }).then(res => res.json())
-                  .then(mealAdded => {
-                    this.CRUDMealAlert = true
-                    this.alertVariant = 'success'
-                    this.mealsList.push(mealAdded)
-                    this.btnActivated = false
-                  })
-            },
-            addOrder(evt){
-                evt.preventDefault()
+                axios.post('https://serverless-aq52i3rgo.vercel.app/api/meals', this.addMealForm, {
+                    headers:{
+                        authorization: localStorage.getItem('token')
+                    }
+                })
+                    .then(mealAdded => {
+                        this.alert.show = true
+                        this.alert.variant = 'success'
+                        this.alert.text = 'Meal successfully added'
+                        this.mealsList.push(mealAdded.data)
+                        this.btnActivated = false
+                    })
             },
             onMealSelected(meal) {
-                this.mealSelected = meal
+                this.mealSelected = meal[0]
             },
             signOff(){
                 localStorage.removeItem('token')
                 localStorage.removeItem('userData')
                 this.changeUserState(false)
-                window.location.href = "/";
+                window.location.href = "/login";
             }
         },
         computed:{
-            ...mapState(["mealsList", "ordersList", "loadingData"]),
+            ...mapState(["mealsList", "loadingData"]),
             btnColor(){
                 if(this.btnActivated) return 'danger'
                 return 'success'
             },
-            alertText(){
-                if(this.alertVariant === 'success') return 'Your meal has been successfully created'
-                if(this.alertVariant === 'warning') return 'Meal has been successfully edited'
-                return 'Meal has been successfully deleted'
-            }
         }
     }
 </script>
