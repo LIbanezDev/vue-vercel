@@ -144,7 +144,7 @@
                 localStorage.removeItem('token')
                 localStorage.removeItem('userData')
                 this.changeUserState(false)
-                window.location.href = "https://vue-tqsr4s550.vercel.app/";
+                window.location.href = "/";
             }
         },
         computed:{

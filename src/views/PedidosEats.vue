@@ -43,15 +43,17 @@
     export default {
         mounted() {
             const token = localStorage.getItem('token')
+            const dataUser = JSON.parse(localStorage.getItem('userData'))
             if(token){
                 this.changeUserState(true)
+                this.userData = dataUser;
             }else{
                 this.changeUserState(false)
             }
         },
         data() {
             return {
-                userData: JSON.parse(localStorage.getItem('userData'))
+                userData: ''
             }
         },
         methods:{

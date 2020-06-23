@@ -71,29 +71,29 @@
                 evt.preventDefault()
                 axios.post('https://serverless-tan-theta.vercel.app/api/auth/login', this.form)
                 .then(res => {
-                    this.loadingLogin = false
                     if(res.data.token) {
-                        this.changeUserState(true)
                         const userToken = res.data.token
                         localStorage.setItem('token', userToken)
-                        this.getUserData()
+
+                        axios.get('https://serverless-tan-theta.vercel.app/api/auth/me', {
+                            headers: {
+                                Authorization:localStorage.getItem('token')
+                            }
+                        })
+                        .then(userData => {
+                            const { name, email } = userData.data
+                            localStorage.setItem('userData', JSON.stringify({name, email}))
+                            this.loadingLogin = false
+                            this.changeUserState(true)
+                        })
+
                     }else{
+                        this.loadingLogin = false
                         this.wrongUserOrEmail = true
                         this.wrongAlertContent = res.data
                     }
                 })
             },
-            getUserData(){
-                axios.get('https://serverless-tan-theta.vercel.app/api/auth/me', {
-                    headers: {
-                        Authorization:localStorage.getItem('token')
-                    }
-                })
-                .then(userData => {
-                    const { name, email } = userData.data
-                    localStorage.setItem('userData', JSON.stringify({name, email}))
-                })
-            }
         },
     }
 </script>
